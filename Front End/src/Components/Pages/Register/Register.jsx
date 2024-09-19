@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { createUser } from "../../../features/Users/userSlice";
 
 const Register = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate(); // Add useNavigate hook
     const { isLoading, error, user: registeredUser } = useSelector(state => state.user);
 
     const [user, setUser] = useState({
@@ -26,6 +27,10 @@ const Register = () => {
     });
 
     const [successMessage, setSuccessMessage] = useState(null);
+
+    // State to manage password visibility
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
     // Handle form validation
     const validateForm = () => {
@@ -115,9 +120,20 @@ const Register = () => {
             });
             setTimeout(() => {
                 setSuccessMessage(null); // Hide the message after 3 seconds
+                navigate("/"); // Redirect to login page
             }, 3000);
         }
-    }, [registeredUser, isLoading]);
+    }, [registeredUser, isLoading, navigate]); // Include navigate in dependency array
+
+    // Toggle password visibility
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(prev => !prev);
+    };
+
+    // Toggle confirm password visibility
+    const toggleConfirmPasswordVisibility = () => {
+        setConfirmPasswordVisible(prev => !prev);
+    };
 
     return (
         <motion.div
@@ -188,28 +204,46 @@ const Register = () => {
                     {/* Password Input */}
                     <div>
                         <label className="block text-gray-300 font-semibold mb-1 text-sm">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={user.password}
-                            onChange={inputHandler}
-                            className="w-full border border-gray-500 rounded-md px-3 py-2 bg-gray-700 text-gray-100 text-sm"
-                            placeholder="Enter your password"
-                        />
+                        <div className="relative">
+                            <input
+                                type={passwordVisible ? "text" : "password"}
+                                name="password"
+                                value={user.password}
+                                onChange={inputHandler}
+                                className="w-full border border-gray-500 rounded-md px-3 py-2 bg-gray-700 text-gray-100 text-sm"
+                                placeholder="Enter your password"
+                            />
+                            <button
+                                type="button"
+                                onClick={togglePasswordVisibility}
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400"
+                            >
+                                {passwordVisible ? "Hide" : "Show"}
+                            </button>
+                        </div>
                         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                     </div>
 
                     {/* Confirm Password Input */}
                     <div>
                         <label className="block text-gray-300 font-semibold mb-1 text-sm">Confirm Password</label>
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={user.confirmPassword}
-                            onChange={inputHandler}
-                            className="w-full border border-gray-500 rounded-md px-3 py-2 bg-gray-700 text-gray-100 text-sm"
-                            placeholder="Confirm your password"
-                        />
+                        <div className="relative">
+                            <input
+                                type={confirmPasswordVisible ? "text" : "password"}
+                                name="confirmPassword"
+                                value={user.confirmPassword}
+                                onChange={inputHandler}
+                                className="w-full border border-gray-500 rounded-md px-3 py-2 bg-gray-700 text-gray-100 text-sm"
+                                placeholder="Confirm your password"
+                            />
+                            <button
+                                type="button"
+                                onClick={toggleConfirmPasswordVisibility}
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400"
+                            >
+                                {confirmPasswordVisible ? "Hide" : "Show"}
+                            </button>
+                        </div>
                         {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
                     </div>
 
