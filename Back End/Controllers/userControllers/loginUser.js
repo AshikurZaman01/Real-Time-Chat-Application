@@ -16,26 +16,7 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: `Password not matched` });
         }
 
-        // Generate a JWT token
-        const token = jwt.sign(
-            {
-                userId: user._id,
-                email: user.email,
-                userName: user.userName,
-                image: user.image,
-                registerTime: user.createdAt,
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }  // 7 days
-        );
-
-        // Set the cookie with the token
-        res.cookie('access_token', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000,    // 7 days
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none'
-        });
+      
 
         // Respond with success and the token
         return res.status(200).json({ message: `Login Successful`, token: token });

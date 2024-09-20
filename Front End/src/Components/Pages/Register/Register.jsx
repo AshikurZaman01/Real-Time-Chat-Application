@@ -6,7 +6,7 @@ import { createUser } from "../../../features/Users/userSlice";
 
 const Register = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate(); // Add useNavigate hook
+    const navigate = useNavigate();
     const { isLoading, error, user: registeredUser } = useSelector(state => state.user);
 
     const [user, setUser] = useState({
@@ -95,14 +95,23 @@ const Register = () => {
             formData.append('password', user.password);
             formData.append('image', user.image);
 
-            dispatch(createUser(formData));
+            try {
+                const response = await dispatch(createUser(formData)).unwrap();
+                const { token } = response;
+                localStorage.setItem('token', token);
+
+                // Trigger success message and redirect
+                setSuccessMessage("User registered successfully!");
+            } catch (err) {
+                // Handle registration error
+                console.error(err);
+            }
         }
     };
 
     // Show success message and reset form if registration is successful
     useEffect(() => {
         if (registeredUser && !isLoading) {
-            setSuccessMessage("User registered successfully!");
             setUser({
                 userName: "",
                 email: "",
@@ -123,7 +132,7 @@ const Register = () => {
                 navigate("/"); // Redirect to login page
             }, 3000);
         }
-    }, [registeredUser, isLoading, navigate]); // Include navigate in dependency array
+    }, [registeredUser, isLoading, navigate]);
 
     // Toggle password visibility
     const togglePasswordVisibility = () => {

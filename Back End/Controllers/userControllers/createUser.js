@@ -1,6 +1,7 @@
 const UserModel = require("../../Models/userModel");
 const bcrypt = require('bcrypt');
 const cloudinary = require('../../Config/cloudniryConfig');
+const jwt = require('jsonwebtoken');  
 
 const createUser = async (req, res) => {
     let cloudinaryImageId;
@@ -38,7 +39,30 @@ const createUser = async (req, res) => {
         });
 
         await newUser.save();
-        res.status(201).json({ message: 'User created successfully' });
+
+        // Generate a JWT token
+        const token = jwt.sign(
+            {
+                userId: newUser._id,
+                email: newUser.email,
+                userName: newUser.userName,
+                image: newUser.image,
+                registerTime: newUser.createdAt,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }  // 7 days
+        );
+
+        // Set the cookie with the token
+        res.cookie('access_token', token, {
+            maxAge: 7 * 24 * 60 * 60 * 1000,    // 7 days
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
+
+        // Return the token in the response body
+        res.status(201).json({ message: 'User created successfully', token });
     } catch (error) {
         console.error('Error creating user:', error);
         res.status(500).json({ message: 'Internal server error' });
